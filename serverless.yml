@@ -2,7 +2,7 @@ tenant: ac360 # Enter your tenant name here
 app: enterprise # Enter your application name here
 service: demo-email-form
 
-frameworkVersion: '>=1.38.0 <2.0.0'
+frameworkVersion: '>=3.3.0'
 
 provider:
   name: aws
