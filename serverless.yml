@@ -10,14 +10,14 @@ provider:
 
 functions:
   post_email:
-    handler: post_email/index.submit
+    handler: postemails/index.submit
     events:
       - http:
           path: email
           method: post
           cors: true
   get_email:
-    handler: get_email/index.submit
+    handler: getmails/index.submit
     events:
       - http:
           path: email
