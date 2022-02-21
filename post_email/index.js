@@ -2,7 +2,7 @@
  * Form Submit
  */
 
-const submit = (event, context, callback) => {
+ const post_emails = (event, context, callback) => {
 
   if (event['queryStringParameters'] && event['queryStringParameters']['error']) {
     let r = Math.random().toString(36).substring(7);
@@ -15,8 +15,8 @@ const submit = (event, context, callback) => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify({ message: 'form submission received' }),
+    body: JSON.stringify({message: "Emails saved"}),
   })
 }
 
-module.exports = { submit }
+module.exports = { post_emails }

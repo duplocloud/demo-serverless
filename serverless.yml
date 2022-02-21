@@ -1,4 +1,3 @@
-tenant: ac360 # Enter your tenant name here
 app: enterprise # Enter your application name here
 service: demo-email-form
 
@@ -10,12 +9,19 @@ provider:
   # credentials: ${secrets:aws-enterprise} # Enter an AWS Secret like this, after you create it in the Dashboard.
 
 functions:
-  formSubmit:
-    handler: index.submit
+  post_email:
+    handler: post_email/index.submit
     events:
       - http:
-          path: submit
+          path: email
           method: post
+          cors: true
+  get_email:
+    handler: get_email/index.submit
+    events:
+      - http:
+          path: email
+          method: get
           cors: true
 
 plugins:
