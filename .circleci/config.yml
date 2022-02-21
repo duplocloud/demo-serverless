@@ -10,7 +10,7 @@ defaults: &defaults
     DOCKER_REPO: public.ecr.aws/p9c8y2k3
     DOCKER_IMAGE_NAME: demo-npm-service
     DUPLO_SERVICE_NAME: nginx
-    BUCKET_NAME: duploservices-default-serverless-128329325849
+    BUCKET_NAME: duploservices-ganesh-test-serverless-128329325849
 
 jobs:
   build_and_test:
