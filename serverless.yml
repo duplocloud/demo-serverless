@@ -17,7 +17,7 @@ functions:
           method: post
           cors: true
   get_email:
-    handler: getmails/index.submit
+    handler: getmails/index.get_emails
     events:
       - http:
           path: email
