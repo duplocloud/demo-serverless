@@ -1,0 +1,71 @@
+version: 2.1
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: cimg/node:17.5.0
+  environment:
+    DEV_TENANT_ID: 9a8a0506-3598-4ce5-80fe-6a5307b98ea3
+    PROD_TENANT_ID: 97a8d5a4-2662-4e9c-9867-9a4565ec5cb6
+    QA_TENANT_ID: 97a8d5a4-2662-4e9c-9867-9a4565ec5cb6
+    DOCKER_REPO: public.ecr.aws/p9c8y2k3
+    DOCKER_IMAGE_NAME: demo-npm-service
+    DUPLO_SERVICE_NAME: nginx
+    BUCKET_NAME: duploservices-default-serverless-128329325849
+
+jobs:
+  build_and_test:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+      - run:
+          name: Install serverless
+          command: sudo npm install -g serverless
+      - run:
+          name: Install other dependencies
+          command: npm install
+      - run:
+          name: Build
+          command: serverless package --stage dev --package ./build
+#      - run:
+#          name: Run tests
+#          command: npm test
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - setup_remote_docker:
+          version: 19.03.13
+        
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+  publish_docker_images:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Install AWS CLI
+          command: |
+            tag=$(node -p "require('./package.json').version")
+            source ./.circleci/duplo_utils.sh
+            with_aws aws s3 cp -r ./build/*.zip s3://${BUCKET_NAME}/#{tag}
+workflows:
+  version: 2.1
+  build_test_publish:
+    jobs:
+      - build_and_test:
+          filters:
+            tags:
+              only: /^v.*/
+      - publish_docker_images:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /^v.*/
