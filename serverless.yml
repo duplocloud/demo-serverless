@@ -10,7 +10,7 @@ provider:
 
 functions:
   post_email:
-    handler: postemails/index.submit
+    handler: postemails/index.post_emails
     events:
       - http:
           path: email
