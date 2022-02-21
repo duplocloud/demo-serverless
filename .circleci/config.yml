@@ -44,7 +44,7 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths: .
-  publish_circile_ci:
+  publish_to_s3:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -69,7 +69,7 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - publish_docker_images:
+      - publish_to_s3:
           requires:
             - build_and_test
           filters:
