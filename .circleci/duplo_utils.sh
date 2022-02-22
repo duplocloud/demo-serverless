@@ -171,7 +171,7 @@ update_lambda_functions(){
   do
     data=$( jq -n \
                   --arg bn "${bucket}" \
-                  --arg on "serverless/${tag}/demo-email-form.zip" \
+                  --arg on "serverless/${tag}/${item}.zip" \
                   --arg fn "duploservices-${tenant}-${item}-${account_number}" \
                   '{S3Bucket: $bn, S3Key: $on, FunctionName: $fn}' )
     echo "Updating function: $data"
