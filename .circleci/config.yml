@@ -57,7 +57,7 @@ jobs:
           command: |
             tag=$(git rev-parse HEAD)
             source ./.circleci/duplo_utils.sh
-            with_aws aws s3 cp ./build/*.zip s3://${BUCKET_NAME}/serverless/${tag}
+            with_aws aws s3 cp ./build/*.zip s3://${RELEASE_BUCKET_NAME}/serverless/${tag}
       - run:
           name: Deploy to Dev
           command: |
