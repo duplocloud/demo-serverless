@@ -4,11 +4,11 @@ defaults: &defaults
   docker:
     - image: cimg/node:17.5.0
   environment:
-    DEV_TENANT_NAME: ganesh-test
+    DEV_TENANT_NAME: dev
     PROD_TENANT_NAME: prod
     QA_TENANT_NAME: qa
     PREPROD_TENANT_NAME: snp
-    RELEASE_BUCKET_NAME: "duploservices-default-serverless-128329325849"
+    RELEASE_BUCKET_NAME: "duploservices-default-lambda-472545272558"
 
 jobs:
   build_and_test:

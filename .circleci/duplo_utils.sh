@@ -162,7 +162,7 @@ update_lambda_functions(){
   local tenantId=$(get_tenant_id $tenant)
   functions=$(yq e '.functions | keys' serverless.yml | awk '{print $2}')
   account_number=$( with_aws aws sts get-caller-identity | jq -r '.Account')
-  bucket="duploservices-${tenant}-serverless-${account_number}"
+  bucket="duploservices-${tenant}-mgmt-service-${account_number}"
   echo "Copy lambda functions zip to the tenants bucket"
   with_aws aws s3 cp ./build/*.zip s3://${bucket}/serverless/${tag}/
 
