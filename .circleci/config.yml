@@ -4,13 +4,11 @@ defaults: &defaults
   docker:
     - image: cimg/node:17.5.0
   environment:
-    DEV_TENANT_ID: 9a8a0506-3598-4ce5-80fe-6a5307b98ea3
-    PROD_TENANT_ID: 97a8d5a4-2662-4e9c-9867-9a4565ec5cb6
-    QA_TENANT_ID: 97a8d5a4-2662-4e9c-9867-9a4565ec5cb6
-    DOCKER_REPO: public.ecr.aws/p9c8y2k3
-    DOCKER_IMAGE_NAME: demo-npm-service
-    DUPLO_SERVICE_NAME: nginx
-    BUCKET_NAME: duploservices-ganesh-test-serverless-128329325849
+    DEV_TENANT_NAME: dev
+    PROD_TENANT_NAME: prod
+    QA_TENANT_NAME: qa
+    PREPROD_TENANT_NAME: snp
+    RELEASE_BUCKET_NAME="duploservices-default-serverless-128329325849"
 
 jobs:
   build_and_test:
@@ -52,15 +50,26 @@ jobs:
       - run:
           name: Install AWS CLI
           command: |
+            echo "Install aws CLI's"
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
+            
             sudo ./aws/install
+            echo "Install yq"
+            wget https://github.com/mikefarah/yq/releases/download/v4.20.2/yq_linux_amd64.tar.gz -O /usr/bin/yq && chmod +x /usr/bin/yq
+            
       - run:
           name: Publish to s3 bucket
           command: |
             tag=$(git rev-parse HEAD)
             source ./.circleci/duplo_utils.sh
-            with_aws aws s3 cp ./build/*.zip s3://${BUCKET_NAME}/${tag}/
+            with_aws aws s3 cp ./build/*.zip s3://${BUCKET_NAME}/serverless/${tag}
+      - run:
+          name: Deploy to Dev
+          command: |
+            tag=$(git rev-parse HEAD)
+            source ./.circleci/duplo_utils.sh
+            update_lambda_functions $tag
 workflows:
   version: 2.1
   build_test_publish:

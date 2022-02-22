@@ -39,11 +39,16 @@ duplo_api_post() {
     local path="${1:-}"
     [ $# -eq 0 ] || shift
 
+     local data="${1:-}"
+    [ $# -eq 0 ] || shift
+
+    echo "Request to post data: $data"
+
     [ -z "${path:-}" ] && die "internal error: no API path was given"
     [ -z "${DUPLO_HOST:-}" ] && die "internal error: duplo_host environment variable must be set"
     [ -z "${DUPLO_TOKEN:-}" ] && die "internal error: duplo_token environment variable must be set"
 
-    curl -Ssf -H 'Content-type: application/json' -X POST -H "Authorization: Bearer $DUPLO_TOKEN" "$@"  "${DUPLO_HOST}/${path}" --data-binary "@sd_dev.json"
+     curl -Ssf -H 'Content-type: application/json' -X POST -H "Authorization: Bearer $DUPLO_TOKEN" -X POST --data "${data}" "${DUPLO_HOST}/${path}" 
 }
 
 
@@ -112,6 +117,23 @@ push_container(){
   with_aws docker push $tag
 }
 
+get_tenant_id(){
+   local tenant="${1:-}"
+   [ $# -eq 0 ] || shift
+   [ -z "${tenant:-}" ] && die "Internal error: no tenant id is provided"
+   duplo_api "adminproxy/GetTenantNames" | jq -c ".[] | select( .AccountName | contains(\"${tenant}\"))" | jq -r '.TenantId'
+}
+
+install_dependencies(){
+  echo "Install aws CLI's"
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  sudo ./aws/install
+
+  echo "Install yq for yaml parsing"
+  sudo wget https://github.com/mikefarah/yq/releases/download/v4.20.2/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
+}
+
 update_service(){
   tag=$(get_docker_tag $@)
   # case "${CIRCLE_BRANCH:-na}" in
@@ -128,6 +150,31 @@ update_service(){
   tenant="${DEV_TENANT_ID}"
   echo "Tenant Id ${tenant}"
   data="{\"Name\": \"${DUPLO_SERVICE_NAME}\",\"Image\":\"${tag}\"}"
-   echo "Tenant Id ${data}"
-  curl -Ssf -H 'Content-type: application/json' -X POST -H "Authorization: Bearer $DUPLO_TOKEN" -X POST --data "${data}" "${DUPLO_HOST}/subscriptions/${tenant}/ReplicationControllerChange" 
+  echo "Update service for tenant: ${tenant}, Update: ${data}"
+  duplo_api_post "subscriptions/${tenant}/ReplicationControllerChange" "$data"
+}
+
+update_lambda_functions(){
+  local tenant="${1:-}"
+  tag=$(git rev-parse HEAD)
+  [ $# -eq 0 ] || shift
+  [ -z "${tenant:-}" ] && die "Internal error: no tenant id is provided"
+  local tenantId=$(get_tenant_id $tenant)
+  functions=$(yq e '.functions | keys' serverless.yml | awk '{print $2}')
+  account_number=$( with_aws aws sts get-caller-identity | jq -r '.Account')
+
+  echo "Copy lambda functions zip to the tenants bucket"
+  with_aws aws s3 cp ./build/*.zip s3://${duploservices-${tenant}-serverless-${account_number}/serverless
+
+  echo "Update lambda functions to start using new code"
+  for item in $functions
+  do
+    data=$( jq -n \
+                  --arg bn "duploservices-${tenant}-serverless-${account_number}" \
+                  --arg on "serverless/${tag}/demo-email-form.zip" \
+                  --arg fn "duploservices-${tenant}-${item}-${account_number}" \
+                  '{S3Bucket: $bn, S3Key: $on, FunctionName: $fn}' )
+    echo "Updating function: $data"
+    duplo_api_post "subscriptions/${tenantId}/UpdateLambdaFunction" "$data"
+  done
 }
