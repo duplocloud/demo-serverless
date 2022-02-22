@@ -4,7 +4,7 @@ defaults: &defaults
   docker:
     - image: cimg/node:17.5.0
   environment:
-    DEV_TENANT_NAME: dev
+    DEV_TENANT_NAME: ganesh-test
     PROD_TENANT_NAME: prod
     QA_TENANT_NAME: qa
     PREPROD_TENANT_NAME: snp
