@@ -51,8 +51,6 @@ jobs:
           name: Install AWS CLI
           command: |
           source ./.circleci/duplo_utils.sh && install_dependencies
-           
-            
       - run:
           name: Publish to s3 bucket
           command: |
