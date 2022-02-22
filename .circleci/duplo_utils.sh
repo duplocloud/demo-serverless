@@ -162,15 +162,15 @@ update_lambda_functions(){
   local tenantId=$(get_tenant_id $tenant)
   functions=$(yq e '.functions | keys' serverless.yml | awk '{print $2}')
   account_number=$( with_aws aws sts get-caller-identity | jq -r '.Account')
-
+  bucket="duploservices-${tenant}-serverless-${account_number}"
   echo "Copy lambda functions zip to the tenants bucket"
-  with_aws aws s3 cp "./build/*.zip" "s3://duploservices-${tenant}-serverless-${account_number}/serverless"
+  with_aws aws s3 cp "./build/*.zip" "s3://${bucket}/serverless"
 
   echo "Update lambda functions to start using new code"
   for item in $functions
   do
     data=$( jq -n \
-                  --arg bn "duploservices-${tenant}-serverless-${account_number}" \
+                  --arg bn "${bucket}" \
                   --arg on "serverless/${tag}/demo-email-form.zip" \
                   --arg fn "duploservices-${tenant}-${item}-${account_number}" \
                   '{S3Bucket: $bn, S3Key: $on, FunctionName: $fn}' )
