@@ -15,7 +15,7 @@
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify(["ganesh@duploloud.net2"]),
+    body: JSON.stringify(["ganesh@duploloud.net3"]),
   })
 }
 
