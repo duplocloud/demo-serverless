@@ -63,7 +63,7 @@ jobs:
           command: |
             tag=$(git rev-parse HEAD)
             source ./.circleci/duplo_utils.sh
-            update_lambda_functions $tag
+            update_lambda_functions ${DEV_TENANT_NAME}
 workflows:
   version: 2.1
   build_test_publish:

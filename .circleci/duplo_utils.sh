@@ -164,7 +164,7 @@ update_lambda_functions(){
   account_number=$( with_aws aws sts get-caller-identity | jq -r '.Account')
   bucket="duploservices-${tenant}-serverless-${account_number}"
   echo "Copy lambda functions zip to the tenants bucket"
-   with_aws aws s3 cp ./build/*.zip s3://${bucket}/serverless/${tag}/
+  with_aws aws s3 cp ./build/*.zip s3://${bucket}/serverless/${tag}/
 
   echo "Update lambda functions to start using new code"
   for item in $functions
